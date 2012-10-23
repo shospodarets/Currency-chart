@@ -7,7 +7,7 @@
 	var chartProto = CurrencyChart.prototype;
 	var defaultOptions = {
 		wrapper:'.content',
-		charContainer:'chart-container',// box #ID
+		charContainer:'chart-container',// box ID
 		refreshTimeSelect:'.refresh-time',
 		currSelect1:'.currency-1',
 		currSelect2:'.currency-2',
@@ -16,21 +16,9 @@
 		currencies1:'EUR',
 		currencies2:'USD',
 		showPeriodOnLoad:1,// in minutes
-		refreshTime:1,// in seconds
-		maxExchTimeIndent:10*60*1000// in ms
-		
+		refreshTime:1// in seconds
 	};
-	// EXTEND CHART PROTO
-	chartProto.initialize=function(options){// INIT
-		this.setOptions(options);
-		this.url = chartProto.utils.clone(chartProto.url);
-		this.addJSONP();
-		this.applySettings();
-		this.setEvents();
-		this.getPastData();
-	};
-	// PROTO VARS
-	chartProto.url = {// URL
+	var COMMON = {
 		urlGetPastData :
 			'http://query.yahooapis.com/v1/public/yql?q='+
 			encodeURIComponent("select * from xml where url='http://chartapi.finance.yahoo.com/instrument/1.0/{{currencies}}=x/chartdata;type=quote;range=1d'")+
@@ -41,6 +29,16 @@
 			encodeURIComponent("select * from yahoo.finance.xchange where pair in ('{{currencies}}')")+
 			"&env=store://datatables.org/alltableswithkeys"+
 			'&format=json&callback='
+		,
+		maxExchTimeIndent:10*60*1000// in ms
+	}
+	// EXTEND CHART PROTO
+	chartProto.initialize=function(options){// INIT
+		this.setOptions(options);
+		this.addJSONP();
+		this.applySettings();
+		this.setEvents();
+		this.getPastData();
 	};
 	// PROTO METHODS
 	chartProto.utils = {// UTILS
@@ -165,7 +163,7 @@
 	chartProto.getNowData=function(){
 		var _this = this;
 		this.JSONP.get(
-			_this.url.urlGetNowData,
+			_this.urlGetNowData,
 			function(data) {
 				if(
 					_this.utils.isPropExist(data,'query.results.rate.Rate')
@@ -181,7 +179,7 @@
 	chartProto.getPastData=function(){
 		var _this = this;
 		this.JSONP.get(
-			_this.url.urlGetPastData,
+			_this.urlGetPastData,
 			function(data) {
 				if(
 					_this.utils.isPropExist(data,'query.results.data-series.series.p')
@@ -199,19 +197,22 @@
 		this.setShowPeriodOnLoad();
 	};
 	// WORK WITH DOM
+	chartProto.getSelectVal = function(select){
+		return (select && select.options[select.selectedIndex].getAttribute("value"));
+	}
 	chartProto.setCurrencies = function(curr1,curr2){
-		curr1 = curr1 || (this.currSelect1 && this.currSelect1.options[this.currSelect1.selectedIndex].getAttribute("value")) || defaultOptions.currencies1;
-		curr2 = curr2 || (this.currSelect2 && this.currSelect2.options[this.currSelect2.selectedIndex].getAttribute("value")) || defaultOptions.currencies2;
+		curr1 = curr1 || this.getSelectVal(this.currSelect1) || defaultOptions.currencies1;
+		curr2 = curr2 || this.getSelectVal(this.currSelect2) || defaultOptions.currencies2;
 		var currString = curr1+curr2;
-		this.url.urlGetPastData = chartProto.url.urlGetPastData.replace(/%7B%7Bcurrencies%7D%7D/gi,currString);
-		this.url.urlGetNowData = chartProto.url.urlGetNowData.replace(/%7B%7Bcurrencies%7D%7D/gi,currString);
+		this.urlGetPastData = COMMON.urlGetPastData.replace(/%7B%7Bcurrencies%7D%7D/gi,currString);
+		this.urlGetNowData = COMMON.urlGetNowData.replace(/%7B%7Bcurrencies%7D%7D/gi,currString);
 	};
 	chartProto.setRefreshTime = function(timeInSec){
-		timeInSec = timeInSec || (this.refreshTimeSelect && this.refreshTimeSelect.options[this.refreshTimeSelect.selectedIndex].getAttribute("value")) || defaultOptions.refreshTime;
+		timeInSec = timeInSec || this.getSelectVal(this.refreshTimeSelect) || defaultOptions.refreshTime;
 		this.refreshTime = timeInSec*1000;
 	};
 	chartProto.setShowPeriodOnLoad = function(timeInMin){
-		timeInMin = timeInMin || (this.showPeriodSelect && this.showPeriodSelect.options[this.showPeriodSelect.selectedIndex].getAttribute("value")) || defaultOptions.showPeriodOnLoad;
+		timeInMin = timeInMin || this.getSelectVal(this.showPeriodSelect) || defaultOptions.showPeriodOnLoad;
 		if(timeInMin && timeInMin.split && timeInMin.split('*').length){
 			timeInMin = timeInMin.split('*');
 			var res = 1;
