@@ -12,7 +12,6 @@
 		currSelect1:'.currency-1',
 		currSelect2:'.currency-2',
 		showPeriodSelect:'.show-period',
-		applyBtn:'.btn-apply',
 		currencies1:'EUR',
 		currencies2:'USD',
 		showPeriodOnLoad:1,// in minutes
@@ -70,6 +69,10 @@
 		},
 		clone : function(obj) {
 			return JSON.parse(JSON.stringify(obj));
+		},
+		is : function(type, obj) {
+			var clas = Object.prototype.toString.call(obj).slice(8, -1);
+			return obj !== undefined && obj !== null && clas === type;
 		}
 	};
 	chartProto.addJSONP = function(){
@@ -109,15 +112,33 @@
 	};
 	if(typeof window.addEventListener === 'function'){// utils.addListener
 		chartProto.addListener = function(el,type,handler){
-			el.addEventListener(type,handler,false);
+			if(chartProto.utils.is('Array',el)){
+				for(var i=el.length;i--;){
+					el[i].addEventListener(type,handler,false);
+				}
+			}else{
+				el.addEventListener(type,handler,false);
+			}
 		};
 	}else if(typeof document.attachEvent === 'function'){
 		chartProto.addListener = function(el,type,handler){
-			el.attachEvent('on'+type,handler);
+			if(chartProto.utils.is('Array',el)){
+				for(var i=el.length;i--;){
+					el[i].attachEvent('on'+type,handler);
+				}
+			}else{
+				el.attachEvent('on'+type,handler);
+			}
 		};
 	}else{
 		chartProto.addListener = function(el,type,handler){
-			el['on'+type]=handler;
+			if(chartProto.utils.is('Array',el)){
+				for(var i=el.length;i--;){
+					el[i]['on'+type]=handler;
+				}
+			}else{
+				el['on'+type]=handler;
+			}
 		};
 	}
 	chartProto.setOptions = function(options){
@@ -132,21 +153,21 @@
 		this.currSelect2 = wrapper.querySelector(_options.currSelect2);
 		this.refreshTimeSelect = wrapper.querySelector(_options.refreshTimeSelect);
 		this.showPeriodSelect = wrapper.querySelector(_options.showPeriodSelect);
-		this.applyBtn = wrapper.querySelector(_options.applyBtn);
+	};
+	chartProto.drawChartFromSettings = function(){
+		this.JSONP.cleanAll();// abort all current requests
+		this.applySettings();
+		this.getPastData();
 	};
 	chartProto.setEvents = function(){
 		var _this = this;
-		_this.addListener(_this.applyBtn,'click',function(e){
-			e = e || window.event;
-			if(typeof e.preventDefault === 'function'){
-				e.preventDefault();
-			}else{
-				e.returnValue = false;
+		_this.addListener(
+			[_this.currSelect1,_this.currSelect2,_this.refreshTimeSelect,_this.showPeriodSelect],
+			'change',
+			function(){
+				_this.drawChartFromSettings();
 			}
-			_this.JSONP.cleanAll();// abort all current requests
-			_this.applySettings();
-			_this.getPastData();
-		});
+		);
 	};
 	// COMMON
 	chartProto.setTimer=function(){
