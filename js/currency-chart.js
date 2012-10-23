@@ -105,20 +105,20 @@
 				}
 			},
 			inProgress:{}
-		}
+		};
 	};
 	if(typeof window.addEventListener === 'function'){// utils.addListener
 		chartProto.addListener = function(el,type,handler){
 			el.addEventListener(type,handler,false);
-		}
+		};
 	}else if(typeof document.attachEvent === 'function'){
 		chartProto.addListener = function(el,type,handler){
 			el.attachEvent('on'+type,handler);
-		}
+		};
 	}else{
 		chartProto.addListener = function(el,type,handler){
 			el['on'+type]=handler;
-		}
+		};
 	}
 	chartProto.setOptions = function(options){
 		var _options = chartProto.utils.clone(defaultOptions);
@@ -199,7 +199,7 @@
 	// WORK WITH DOM
 	chartProto.getSelectVal = function(select){
 		return (select && select.options[select.selectedIndex].getAttribute("value"));
-	}
+	};
 	chartProto.setCurrencies = function(curr1,curr2){
 		curr1 = curr1 || this.getSelectVal(this.currSelect1) || defaultOptions.currencies1;
 		curr2 = curr2 || this.getSelectVal(this.currSelect2) || defaultOptions.currencies2;
