@@ -19,12 +19,12 @@
 	};
 	var COMMON = {
 		urlGetPastData :
-			'http://query.yahooapis.com/v1/public/yql?q='+
-			encodeURIComponent("select * from xml where url='http://chartapi.finance.yahoo.com/instrument/1.0/{{currencies}}=x/chartdata;type=quote;range=1d'")+
+			'https://query.yahooapis.com/v1/public/yql?q='+
+			encodeURIComponent("select * from xml where url='https://chartapi.finance.yahoo.com/instrument/1.0/{{currencies}}=x/chartdata;type=quote;range=1d'")+
 			'&format=json&callback='
 		,
 		urlGetNowData :
-			'http://query.yahooapis.com/v1/public/yql?q='+
+			'https://query.yahooapis.com/v1/public/yql?q='+
 			encodeURIComponent("select * from yahoo.finance.xchange where pair in ('{{currencies}}')")+
 			"&env=store://datatables.org/alltableswithkeys"+
 			'&format=json&callback='
